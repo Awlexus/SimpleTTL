@@ -31,8 +31,8 @@ defmodule SimpleTTL do
       [] ->
         []
 
-      val ->
-        touch(cache_id, key)
+      [val] ->
+        spawn(SimpleTTL, :touch, [cache_id, key])
         val
     end
   end
@@ -81,6 +81,7 @@ defmodule SimpleTTL do
   def update(cache_id, key, update_fun) do
     new_val =
       :ets.lookup(cache_id, key)
+      |> List.first()
       |> Tuple.delete_at(1)
       |> update_fun.()
       |> Tuple.insert_at(1, System.system_time(@time_unit))
