@@ -2,7 +2,9 @@ defmodule SimpleTTL do
   use GenServer
 
   def start_link(table, ttl, check_interval, type \\ :set) do
-    GenServer.start_link(__MODULE__, %{table: table, ttl: ttl, check_interval: check_interval, type: type},
+    GenServer.start_link(
+      __MODULE__,
+      %{table: table, ttl: ttl, check_interval: check_interval, type: type},
       name: table
     )
   end
@@ -70,12 +72,13 @@ defmodule SimpleTTL do
   end
 
   def update(cache_id, key, update_fun) do
-    :ets.update(cache_id, key, fn old ->
-      old
-      |> Tuple.delete_at(1)
-      |> update_fun.()
-      |> Tuple.insert_at(1, System.system_time(:seconds))
-    end)
+    new_val = 
+    :ets.lookup(cache_id, key)
+    |> Tuple.delete_at(1)
+    |> update_fun.()
+    |> Tuple.insert_at(1, System.system_time(:seconds))
+
+    :ets.insert(cache_id, new_val)
   end
 
   def handle_cast(:clear, state) do
