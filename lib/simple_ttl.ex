@@ -1,8 +1,8 @@
 defmodule SimpleTTL do
   use GenServer
 
-  def start_link(table, ttl, check_interval, typea \\ :set) do
-    GenServer.start_link(__MODULE__, %{table: table, ttl: ttl, check_interval: check_interval},
+  def start_link(table, ttl, check_interval, type \\ :set) do
+    GenServer.start_link(__MODULE__, %{table: table, ttl: ttl, check_interval: check_interval, type: type},
       name: table
     )
   end
@@ -78,7 +78,7 @@ defmodule SimpleTTL do
       old
       |> Tuple.delete_at(1)
       |> update_fun.()
-      |> Tuple.insert_at(1, Systen.system_time(:seconds))
+      |> Tuple.insert_at(1, System.system_time(:seconds))
     end)
   end
 
