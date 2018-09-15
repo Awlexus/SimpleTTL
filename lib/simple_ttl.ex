@@ -78,7 +78,7 @@ defmodule SimpleTTL do
       old
       |> Tuple.delete_at(1)
       |> update_fun.()
-      |> Tuple.insert_at(1, Systen.system_time(:seconds))
+      |> Tuple.insert_at(1, System.system_time(:seconds))
     end)
   end
 
