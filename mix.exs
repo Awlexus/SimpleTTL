@@ -1,4 +1,4 @@
-defmodule SimpleTtl.MixProject do
+defmodule SimpleTTL.MixProject do
   use Mix.Project
 
   def project do
