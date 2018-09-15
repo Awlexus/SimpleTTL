@@ -33,7 +33,7 @@ defmodule SimpleTTL do
 
       [val] ->
         spawn(SimpleTTL, :touch, [cache_id, key])
-        val
+        [Tuple.delete_at(val, 1)]
     end
   end
 
@@ -46,7 +46,7 @@ defmodule SimpleTTL do
 
       val ->
         spawn(SimpleTTL, :touch, [cache_id, key])
-        val
+        [Tuple.delete_at(val, 1)]
     end
   end
 
