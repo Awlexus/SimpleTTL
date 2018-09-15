@@ -53,10 +53,6 @@ defmodule SimpleTTL do
     :ets.insert_new(cache_id, new_value)
   end
 
-  def new(cache_id, ttl, check_interval, type) do
-    %{}
-  end
-
   def put(cache_id, values) when is_list(values) do
     new_values = Enum.map(values, &Tuple.insert_at(&1, 1, System.system_time(:seconds)))
 
