@@ -1,8 +1,8 @@
 defmodule SimpleTTL do
   use GenServer
 
-  def start_link(table, ttl, check_interval, typea \\ :set) do
-    GenServer.start_link(__MODULE__, %{table: table, ttl: ttl, check_interval: check_interval},
+  def start_link(table, ttl, check_interval, type \\ :set) do
+    GenServer.start_link(__MODULE__, %{table: table, ttl: ttl, check_interval: check_interval, type: type},
       name: table
     )
   end
