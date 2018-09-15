@@ -1,6 +1,7 @@
 defmodule SimpleTTL do
   use GenServer
 
+  @time_unit :milliseconds
   def start_link(table, ttl, check_interval, type \\ :set) do
     GenServer.start_link(
       __MODULE__,
@@ -49,20 +50,26 @@ defmodule SimpleTTL do
     end
   end
 
+  def insert_new(cache_id, values) when is_list(values) do
+    new_values = Enum.map(values, &Tuple.insert_at(&1, 1, System.system_time(@time_unit)))
+
+    :ets.insert_new(cache_id, new_values)
+  end
+
   def insert_new(cache_id, value) do
-    new_value = Tuple.insert_at(value, 1, System.system_time(:seconds))
+    new_value = Tuple.insert_at(value, 1, System.system_time(@time_unit))
 
     :ets.insert_new(cache_id, new_value)
   end
 
   def put(cache_id, values) when is_list(values) do
-    new_values = Enum.map(values, &Tuple.insert_at(&1, 1, System.system_time(:seconds)))
+    new_values = Enum.map(values, &Tuple.insert_at(&1, 1, System.system_time(@time_unit)))
 
     :ets.insert(cache_id, new_values)
   end
 
   def put(cache_id, value) do
-    new_value = Tuple.insert_at(value, 1, System.system_time(:seconds))
+    new_value = Tuple.insert_at(value, 1, System.system_time(@time_unit))
 
     :ets.insert(cache_id, new_value)
   end
@@ -76,7 +83,7 @@ defmodule SimpleTTL do
       :ets.lookup(cache_id, key)
       |> Tuple.delete_at(1)
       |> update_fun.()
-      |> Tuple.insert_at(1, System.system_time(:seconds))
+      |> Tuple.insert_at(1, System.system_time(@time_unit))
 
     :ets.insert(cache_id, new_val)
   end
@@ -87,16 +94,17 @@ defmodule SimpleTTL do
     {:noreply, state}
   end
 
-  defp clear(table, ttl, check_interval) do
-    time = System.system_time(:seconds)
+  def clear(table, ttl, check_interval) do
+    time = System.system_time(@time_unit)
 
     table
     |> :ets.tab2list()
     |> Enum.each(fn
-      entry -> if(elem(entry, 1) + ttl < time, do: :ets.delete(table, elem(entry, 0)))
+      entry ->
+        time_stamp = elem(entry, 1)
+        if(time_stamp + ttl < time, do: :ets.delete(table, elem(entry, 0)))
     end)
 
-    Process.sleep(check_interval)
-    GenServer.cast(table, :clear)
+    :timer.apply_after(check_interval, GenServer, :cast, [table, :clear])
   end
 end
