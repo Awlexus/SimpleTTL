@@ -72,17 +72,17 @@ defmodule SimpleTTL do
   end
 
   def update(cache_id, key, update_fun) do
-    new_val = 
-    :ets.lookup(cache_id, key)
-    |> Tuple.delete_at(1)
-    |> update_fun.()
-    |> Tuple.insert_at(1, System.system_time(:seconds))
+    new_val =
+      :ets.lookup(cache_id, key)
+      |> Tuple.delete_at(1)
+      |> update_fun.()
+      |> Tuple.insert_at(1, System.system_time(:seconds))
 
     :ets.insert(cache_id, new_val)
   end
 
   def handle_cast(:clear, state) do
-    spawn(__MODULE__, :clear, [state.name, state.ttl, state.check_interval])
+    spawn(__MODULE__, :clear, [state.table, state.ttl, state.check_interval])
 
     {:noreply, state}
   end
