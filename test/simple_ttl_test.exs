@@ -1,8 +1,8 @@
-defmodule SimpleTtlTest do
+defmodule SimpleTTLTest do
   use ExUnit.Case
-  doctest SimpleTtl
+  doctest SimpleTTL
 
   test "greets the world" do
-    assert SimpleTtl.hello() == :world
+    assert SimpleTTL.hello() == :world
   end
 end
