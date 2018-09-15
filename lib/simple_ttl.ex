@@ -94,8 +94,7 @@ defmodule SimpleTTL do
     table
     |> :ets.tab2list()
     |> Enum.each(fn
-      entry ->
-        if(elem(entry, 1) + ttl < time, do: :ets.delete(table, elem(entry, 0)))
+      entry -> if(elem(entry, 1) + ttl < time, do: :ets.delete(table, elem(entry, 0)))
     end)
 
     Process.sleep(check_interval)
