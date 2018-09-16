@@ -5,7 +5,7 @@ defmodule SimpleTTL do
   @default_types [:public, :named_table]
   @forbidden_types [:protected, :private]
 
-  def start_link(table, ttl, check_interval, type \\ :set) do
+  def start_link(table, ttl, check_interval, type \\ []) do
     GenServer.start_link(
       __MODULE__,
       %{table: table, ttl: ttl, check_interval: check_interval, type: type},
@@ -16,15 +16,10 @@ defmodule SimpleTTL do
   def init(old_args) do
     {type, args} = Map.pop(old_args, :type)
 
-    table_types =
-      case type do
-        [types] ->
-          (types ++ @default_types)
-          |> Enum.uniq()
-
-        type ->
-          [type]
-      end
+    table_types = \
+      types
+      ++ @default_types
+      |> Enum.uniq()
       |> List.flatten()
       |> Enum.reject(fn type -> type in @forbidden_types end)
 
