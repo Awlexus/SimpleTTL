@@ -1,6 +1,5 @@
 defmodule SimpleTTL do
   use GenServer
-  require Logger
 
   @time_unit :milliseconds
   @default_types [:set, :public, :named_table]
