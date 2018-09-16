@@ -2,7 +2,10 @@ defmodule SimpleTTL do
   use GenServer
 
   @time_unit :milliseconds
-  def start_link(table, ttl, check_interval, type \\ :set) do
+  @default_types [:set, :public, :named_table]
+  @forbidden_types [:protected, :private]
+
+  def start_link(table, ttl, check_interval, type \\ []) do
     GenServer.start_link(
       __MODULE__,
       %{table: table, ttl: ttl, check_interval: check_interval, type: type},
@@ -12,8 +15,19 @@ defmodule SimpleTTL do
 
   def init(old_args) do
     {type, args} = Map.pop(old_args, :type)
-    :ets.new(args.table, [type, :public, :named_table])
 
+    table_types = \
+      types
+      ++ @default_types
+      |> Enum.uniq()
+      |> List.flatten()
+      |> Enum.reject(fn type -> type in @forbidden_types end)
+
+    create(args, table_types)
+  end
+
+  defp create(args, types) do
+    :ets.new(args.table, types)
     clear(args.table, args.ttl, args.check_interval)
     {:ok, args}
   end
@@ -103,7 +117,10 @@ defmodule SimpleTTL do
     |> Enum.each(fn
       entry ->
         time_stamp = elem(entry, 1)
-        if(time_stamp + ttl < time, do: :ets.delete(table, elem(entry, 0)))
+
+        if time_stamp + ttl < time do
+          :ets.delete(table, elem(entry, 0))
+        end
     end)
 
     :timer.apply_after(check_interval, GenServer, :cast, [table, :clear])
