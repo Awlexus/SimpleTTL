@@ -2,7 +2,8 @@ defmodule SimpleTTL do
   use GenServer
 
   @time_unit :milliseconds
-  @default_types [:set, :public, :named_table]
+  @default_types [:public, :named_table]
+  @forbidden_types [:protected, :private]
 
   def start_link(table, ttl, check_interval, type \\ :set) do
     GenServer.start_link(
@@ -25,6 +26,7 @@ defmodule SimpleTTL do
           [type]
       end
       |> List.flatten()
+      |> Enum.reject(fn type -> type in @forbidden_types end)
 
     create(args, table_types)
   end
@@ -121,7 +123,9 @@ defmodule SimpleTTL do
       entry ->
         time_stamp = elem(entry, 1)
 
-        if time_stamp + ttl < time, do: :ets.delete(table, elem(entry, 0))
+        if time_stamp + ttl < time do
+          :ets.delete(table, elem(entry, 0))
+        end
     end)
 
     :timer.apply_after(check_interval, GenServer, :cast, [table, :clear])
