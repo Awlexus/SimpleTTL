@@ -1,7 +1,10 @@
 defmodule SimpleTTL do
   use GenServer
+  require Logger
 
   @time_unit :milliseconds
+  @default_types [:set, :public, :named_table]
+
   def start_link(table, ttl, check_interval, type \\ :set) do
     GenServer.start_link(
       __MODULE__,
@@ -12,8 +15,23 @@ defmodule SimpleTTL do
 
   def init(old_args) do
     {type, args} = Map.pop(old_args, :type)
-    :ets.new(args.table, [type, :public, :named_table])
 
+    table_types =
+      case type do
+        [types] ->
+          (types ++ @default_types)
+          |> Enum.uniq()
+
+        type ->
+          [type]
+      end
+      |> List.flatten()
+
+    create(args, table_types)
+  end
+
+  defp create(args, types) do
+    :ets.new(args.table, types)
     clear(args.table, args.ttl, args.check_interval)
     {:ok, args}
   end
@@ -103,7 +121,8 @@ defmodule SimpleTTL do
     |> Enum.each(fn
       entry ->
         time_stamp = elem(entry, 1)
-        if(time_stamp + ttl < time, do: :ets.delete(table, elem(entry, 0)))
+
+        if time_stamp + ttl < time, do: :ets.delete(table, elem(entry, 0))
     end)
 
     :timer.apply_after(check_interval, GenServer, :cast, [table, :clear])
