@@ -2,7 +2,7 @@ defmodule SimpleTTL do
   use GenServer
 
   @time_unit :milliseconds
-  @default_types [:public, :named_table]
+  @default_types [:set, :public, :named_table]
   @forbidden_types [:protected, :private]
 
   def start_link(table, ttl, check_interval, type \\ []) do
