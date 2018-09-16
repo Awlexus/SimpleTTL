@@ -16,11 +16,9 @@ defmodule SimpleTTL do
   def init(old_args) do
     {type, args} = Map.pop(old_args, :type)
 
-    table_types = \
-      types
-      ++ @default_types
+    table_types =
+      (type ++ @default_types)
       |> Enum.uniq()
-      |> List.flatten()
       |> Enum.reject(fn type -> type in @forbidden_types end)
 
     create(args, table_types)
